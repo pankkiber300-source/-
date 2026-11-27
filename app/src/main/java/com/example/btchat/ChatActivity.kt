@@ -81,12 +81,12 @@ class ChatActivity : AppCompatActivity(), BluetoothChatService.Listener {
         service.stop()
     }
 
-    override fun onStateChanged(state: BluetoothChatService.State) {
+    override fun onStateChanged(state: BluetoothChatService.ConnState) {
         when (state) {
-            BluetoothChatService.State.LISTENING -> chatTitle.text = "Ожидание подключения…"
-            BluetoothChatService.State.CONNECTING -> chatTitle.text = "Подключение…"
-            BluetoothChatService.State.CONNECTED -> {} // title set in onConnectedTo
-            BluetoothChatService.State.NONE -> {}
+            BluetoothChatService.ConnState.LISTENING -> chatTitle.text = "Ожидание подключения…"
+            BluetoothChatService.ConnState.CONNECTING -> chatTitle.text = "Подключение…"
+            BluetoothChatService.ConnState.CONNECTED -> {} // title set in onConnectedTo
+            BluetoothChatService.ConnState.NONE -> {}
         }
     }
 

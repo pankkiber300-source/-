@@ -25,14 +25,14 @@ class BluetoothChatService(
 ) {
 
     interface Listener {
-        fun onStateChanged(state: State)
+        fun onStateChanged(state: ConnState)
         fun onMessageReceived(text: String)
         fun onMessageSent(text: String)
         fun onConnectedTo(deviceName: String)
         fun onError(message: String)
     }
 
-    enum class State { NONE, LISTENING, CONNECTING, CONNECTED }
+    enum class ConnState { NONE, LISTENING, CONNECTING, CONNECTED }
 
     companion object {
         // Well-known "Serial Port Profile" UUID, used so both sides agree on
@@ -43,7 +43,7 @@ class BluetoothChatService(
 
     private val mainHandler = Handler(Looper.getMainLooper())
 
-    @Volatile private var state: State = State.NONE
+    @Volatile private var state: ConnState = ConnState.NONE
         set(value) {
             field = value
             mainHandler.post { listener.onStateChanged(value) }
@@ -60,7 +60,7 @@ class BluetoothChatService(
         if (acceptThread == null) {
             acceptThread = AcceptThread().also { it.start() }
         }
-        state = State.LISTENING
+        state = ConnState.LISTENING
     }
 
     @Synchronized
@@ -68,7 +68,7 @@ class BluetoothChatService(
         acceptThread?.cancel(); acceptThread = null
         connectThread?.cancel()
         connectThread = ConnectThread(device).also { it.start() }
-        state = State.CONNECTING
+        state = ConnState.CONNECTING
     }
 
     @Synchronized
@@ -76,7 +76,7 @@ class BluetoothChatService(
         acceptThread?.cancel(); acceptThread = null
         connectThread?.cancel(); connectThread = null
         connectedThread?.cancel(); connectedThread = null
-        state = State.NONE
+        state = ConnState.NONE
     }
 
     fun send(text: String) {
@@ -93,7 +93,7 @@ class BluetoothChatService(
         connectThread?.cancel(); connectThread = null
         connectedThread?.cancel()
         connectedThread = ConnectedThread(socket).also { it.start() }
-        state = State.CONNECTED
+        state = ConnState.CONNECTED
         mainHandler.post { listener.onConnectedTo(remoteName) }
     }
 
@@ -111,7 +111,7 @@ class BluetoothChatService(
 
         override fun run() {
             var socket: BluetoothSocket?
-            while (state != State.CONNECTED) {
+            while (state != ConnState.CONNECTED) {
                 socket = try {
                     serverSocket?.accept()
                 } catch (e: IOException) {
