@@ -35,3 +35,20 @@ jobs:
           name: btchat-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+
+      - name: Publish APK to apk-output branch
+        run: |
+          set -e
+          mkdir -p /tmp/apk-out
+          cp app/build/outputs/apk/debug/app-debug.apk /tmp/apk-out/btchat-debug.apk
+          cd /tmp/apk-out
+          git init -q
+          git checkout -q -b apk-output
+          git config user.email "build@example.com"
+          git config user.name "BtChat Build"
+          git add btchat-debug.apk
+          git commit -q -m "Built APK from commit ${GITHUB_SHA}"
+          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push -q --force origin HEAD:apk-output
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
