@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">BT Chat</string>
+    <string name="status_checking">Проверка Bluetooth…</string>
+    <string name="scan_for_devices">Искать устройства рядом</string>
+    <string name="wait_for_connection">Ждать подключения (как сервер)</string>
+    <string name="nearby_devices">Устройства:</string>
+    <string name="chat_title">Чат</string>
+    <string name="type_message">Сообщение…</string>
+    <string name="send">Отправить</string>
+</resources>
