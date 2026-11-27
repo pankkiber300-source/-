@@ -43,7 +43,9 @@ class BluetoothChatService(
 
     private val mainHandler = Handler(Looper.getMainLooper())
 
-    @Volatile private var state: ConnState = ConnState.NONE
+    // Named connState (not "state") to avoid colliding with java.lang.Thread's
+    // own inherited `state` property inside the Thread subclasses below.
+    @Volatile private var connState: ConnState = ConnState.NONE
         set(value) {
             field = value
             mainHandler.post { listener.onStateChanged(value) }
@@ -60,7 +62,7 @@ class BluetoothChatService(
         if (acceptThread == null) {
             acceptThread = AcceptThread().also { it.start() }
         }
-        state = ConnState.LISTENING
+        connState = ConnState.LISTENING
     }
 
     @Synchronized
@@ -68,7 +70,7 @@ class BluetoothChatService(
         acceptThread?.cancel(); acceptThread = null
         connectThread?.cancel()
         connectThread = ConnectThread(device).also { it.start() }
-        state = ConnState.CONNECTING
+        connState = ConnState.CONNECTING
     }
 
     @Synchronized
@@ -76,7 +78,7 @@ class BluetoothChatService(
         acceptThread?.cancel(); acceptThread = null
         connectThread?.cancel(); connectThread = null
         connectedThread?.cancel(); connectedThread = null
-        state = ConnState.NONE
+        connState = ConnState.NONE
     }
 
     fun send(text: String) {
@@ -93,7 +95,7 @@ class BluetoothChatService(
         connectThread?.cancel(); connectThread = null
         connectedThread?.cancel()
         connectedThread = ConnectedThread(socket).also { it.start() }
-        state = ConnState.CONNECTED
+        connState = ConnState.CONNECTED
         mainHandler.post { listener.onConnectedTo(remoteName) }
     }
 
@@ -111,7 +113,7 @@ class BluetoothChatService(
 
         override fun run() {
             var socket: BluetoothSocket?
-            while (state != ConnState.CONNECTED) {
+            while (this@BluetoothChatService.connState != ConnState.CONNECTED) {
                 socket = try {
                     serverSocket?.accept()
                 } catch (e: IOException) {
